@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model customer {
+  id_customer    Int       @id @default(autoincrement())
+  name_customer  String    @db.VarChar(50)
+  phone_customer Int
+  email_customer String?   @db.Char(50)
+  id_shop        Int
+  shop           shop      @relation(fields: [id_shop], references: [id_shop], onDelete: NoAction, onUpdate: NoAction, map: "customer_ibfk_1")
+  receipt        receipt[]
+
+  @@index([id_shop], map: "id_shop")
+}
+
+model detail_receipt {
+  id_detail_receipt Int     @id @default(autoincrement())
+  name_product      String  @db.VarChar(50)
+  price_product     Float
+  quantity_product  Int
+  name_customer     String  @db.VarChar(50)
+  phone_customer    Int
+  discount          Float?  @db.Float
+  tax               Float?  @db.Float
+  id_receipt        Int
+  receipt           receipt @relation(fields: [id_receipt], references: [id_receipt], onDelete: NoAction, onUpdate: NoAction, map: "detail_receipt_ibfk_1")
+
+  @@index([id_receipt], map: "id_receipt")
+}
+
+model product {
+  id_product    Int    @id @default(autoincrement())
+  name_product  String @db.VarChar(50)
+  price_product Float
+  id_shop       Int
+  shop          shop   @relation(fields: [id_shop], references: [id_shop], onDelete: NoAction, onUpdate: NoAction, map: "product_ibfk_1")
+
+  @@index([id_shop], map: "id_shop")
+}
+
+model receipt {
+  id_receipt           Int              @id @default(autoincrement())
+  date_receipt         DateTime         @default(now()) @db.DateTime(0)
+  payment_receipt      String           @db.Char(50)
+  total_amount_receipt Float
+  id_shop              Int
+  id_customer          Int
+  detail_receipt       detail_receipt[]
+  shop                 shop             @relation(fields: [id_shop], references: [id_shop], onDelete: NoAction, onUpdate: NoAction, map: "receipt_ibfk_1")
+  customer             customer         @relation(fields: [id_customer], references: [id_customer], onUpdate: Restrict, map: "receipt_ibfk_2")
+
+  @@index([id_customer], map: "id_customer")
+  @@index([id_shop], map: "id_shop")
+}
+
+model shop {
+  id_shop   Int        @id @default(autoincrement())
+  name_shop String     @db.VarChar(50)
+  customer  customer[]
+  product   product[]
+  receipt   receipt[]
+  user      user[]
+}
+
+model user {
+  id_user    Int    @id @default(autoincrement())
+  name_user  String @db.VarChar(50)
+  email_user String @db.Char(50)
+  password   String @db.Char(50)
+  id_shop    Int
+  shop       shop   @relation(fields: [id_shop], references: [id_shop], onDelete: NoAction, onUpdate: NoAction, map: "Foreign Key")
+
+  @@index([id_shop], map: "Foreign Key")
+}
